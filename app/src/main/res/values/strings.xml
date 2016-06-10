@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">My Task</string>
+    <string name="activity_newtask_title">New Task</string>
+    <string name="action_new_task">Add Task</string>
+    <string name="no_messages">No Task</string>
+    <string name="insult_msg1">Hurry!</string>
+    <string name="insult_msg2">Rush!</string>
+    <string name="insult_msg3">Move it!</string>
+    <string name="insult_msg4">Shake a leg!</string>
+    <string name="insult_msg5">Make it snappy!</string>
+</resources>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:paddingLeft="8dp"
+    android:paddingTop="8dp"
+    android:paddingRight="8dp"
+    android:paddingBottom="8dp"
+    >
+
+    <ListView android:id="@+id/list_task"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:headerDividersEnabled="false">
+    </ListView>
+
+    <TextView
+        android:id="@+id/empty_list_item"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:textSize="20dp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:text="@string/no_messages">
+    </TextView>
+</LinearLayout>
