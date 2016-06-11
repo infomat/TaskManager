@@ -1,6 +1,7 @@
 package com.conestogac.mytask;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -39,6 +40,24 @@ public class MainActivity extends AppCompatActivity {
         //read cursor from DB and set to cursor adapter
         //cursor adapter will be connected to list view
         readFromDB();
+
+
+        //Important!!! To get this work, android:clickable="false", android:focusable="false",
+        // android:focusableInTouchMode="false" are defined within all candiate widget
+        //that consumes click event. Without adding this, click event does not work
+        //for the list
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> listView, View view,
+                                    int position, long id) {
+                // Get the cursor, positioned to the corresponding row in the result set
+                Cursor cursor = (Cursor) listView.getItemAtPosition(position);
+
+                // Get the selected item and activate newtask activity
+                Log.d(TAG, cursor.getString(cursor.getColumnIndexOrThrow(TaskDatabaseHelper.KEY_TASKS_TODO)));
+
+            }
+        });
     }
 
 
@@ -55,11 +74,6 @@ public class MainActivity extends AppCompatActivity {
 
         dbHelper.close();
         super.onDestroy();
-    }
-
-    public void onClick(View view) {
-        Log.d(TAG,"onClicked");
-
     }
 
     @Override
@@ -92,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 //get cursor and load data into adapter
                 taskAdapter = new TaskCursorAdapter(MainActivity.this, dbHelper.getAllTasks(),0);
+
                 //set cursor adapter to listview
                 listView.setAdapter(taskAdapter);
             }

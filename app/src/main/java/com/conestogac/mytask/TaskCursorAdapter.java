@@ -6,10 +6,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
@@ -28,10 +30,11 @@ public class TaskCursorAdapter extends CursorAdapter{
         curConext = context;
     }
 
+
     // The newView method is used to inflate a new view and return it,
     // you don't bind any data to the view at this point.
     @Override
-    public View newView(Context context, Cursor cursor, ViewGroup parent) {
+    public View newView(Context context, Cursor cursor, final ViewGroup parent) {
         return LayoutInflater.from(context).inflate(R.layout.task_item, parent, false);
     }
 
@@ -42,13 +45,12 @@ public class TaskCursorAdapter extends CursorAdapter{
         // Find fields to populate in inflated template
         CheckBox cbIsCompleted = (CheckBox) view.findViewById(R.id.cbIsCompleted);
         Button btPriority = (Button) view.findViewById(R.id.btPrority);
-        TextView tvId = (TextView) view.findViewById(R.id.tvId);
         TextView tvTodo = (TextView) view.findViewById(R.id.tvTodo);
         TextView tvDateTime = (TextView) view.findViewById(R.id.tvDateTime);
 
         // Read value with cursor and set value to widget
         // Id is set to invisible text, to make easy to read data from database
-        tvId.setText(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow(TaskDatabaseHelper.KEY_TASKS_TODO))));
+        curConext = context;
         btPriority.setBackgroundColor(getColorFromPriority(cursor.getInt(cursor.getColumnIndexOrThrow(TaskDatabaseHelper.KEY_TASKS_PRIORITY))));
         tvTodo.setText(String.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(TaskDatabaseHelper.KEY_TASKS_TODO))));
         tvDateTime.setText(String.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(TaskDatabaseHelper.KEY_TASKS_DUEDATE))));
