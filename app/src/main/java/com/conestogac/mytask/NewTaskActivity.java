@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -18,6 +19,10 @@ import java.util.Date;
  * This activity is for getting task from user
  */
 public class NewTaskActivity extends Activity implements AdapterView.OnItemSelectedListener {
+    public static final String EXTRA_DB_COMMAND = "dboperation";
+    public static final String EXTRA_SELECTED_ITEM = "selectedItem";
+    public static String DbOperation = "CREATE";
+
     private static final String TAG = NewTaskActivity.class.getSimpleName();
     private static final String[] listPriority={"None", "Low", "Mid", "Important"};
     private static String[] listDate={"Today", "Tomorrow", "Next", "Pick a date..."};
@@ -26,9 +31,15 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
     private SimpleDateFormat sdf_user = new SimpleDateFormat("EEE MMM dd, hh:mm a");
 
     private Date today = new Date();
-    Task taskItem = new Task();
+    Task taskItem;
 
     private EditText edTodo;
+    private Spinner spPriority;
+    private Spinner spDate;
+    private Spinner spTime;
+    private Button  btAdd;
+    private Button  btComplete;
+
     private Integer mPriority;
     private Calendar mCal;
     private TaskDatabaseHelper mytaskdb;
@@ -44,9 +55,36 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
         //set up widget
         edTodo = (EditText) findViewById(R.id.edTodo);
         setupSpinner();
+        btAdd = (Button) findViewById(R.id.btAdd);
+        btComplete = (Button) findViewById(R.id.btComplete);
 
         //get current date, time
         mCal = Calendar.getInstance();
+
+        //check Extra and set data if it is update
+        DbOperation = getIntent().getStringExtra(EXTRA_DB_COMMAND);
+        if (DbOperation.equals("UPDATE")) {
+            this.setTitle("Update Task");
+            btAdd.setText("UPDATE");
+            taskItem = (Task) getIntent().getExtras().get(EXTRA_SELECTED_ITEM);
+            edTodo.setText(taskItem.getTodo());
+            spPriority.setSelection(taskItem.getPriority());
+
+            //set calendar
+            try {
+                mCal.setTime(sdf_user.parse(taskItem.getDueDateTime()));
+            } catch (Exception e) {
+                mCal.setTime(today);
+            }
+            //set spinner for date from
+
+            //set spinner for time from
+
+
+        } else {
+            this.setTitle("New Task");
+            btAdd.setText("ADD");
+        }
     }
 
     @Override
@@ -77,12 +115,14 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
-     //   selection.setText("");
+
     }
 
     //Add Button
     public void onAddTask(View view) {
         String strDate;
+        taskItem = new Task();
+
         Log.d(TAG, "Add Button");
         taskItem.setTodo(edTodo.getText().toString());
         taskItem.setPriority(mPriority);
@@ -108,13 +148,13 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
     // To setup spinner to get Priority, Data, Time
     private void setupSpinner() {
         //Get Spinner and set listener to get event
-        Spinner spPriority=(Spinner)findViewById(R.id.spPriority);
+        spPriority=(Spinner)findViewById(R.id.spPriority);
         spPriority.setOnItemSelectedListener(this);
 
-        Spinner spDate=(Spinner)findViewById(R.id.spDate);
+        spDate=(Spinner)findViewById(R.id.spDate);
         spDate.setOnItemSelectedListener(this);
 
-        Spinner spTime=(Spinner)findViewById(R.id.spTime);
+        spTime=(Spinner)findViewById(R.id.spTime);
         spTime.setOnItemSelectedListener(this);
 
         //To set next week
@@ -175,6 +215,7 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
                 break;
             case 3:
                 //Pick a date
+
                 break;
             default:
         }

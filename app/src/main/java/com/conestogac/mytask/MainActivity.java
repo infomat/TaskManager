@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     private TaskCursorAdapter taskAdapter;
     private TaskDatabaseHelper dbHelper;
     private ListView listView;
+    private Task taskItem = new Task();
 
 //List View are bind to Cursor Adapter to support for long list of data
 //Additionally, to support taking long time to load database data,
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         readFromDB();
 
 
+        //Add listener on listview
         //Important!!! To get this work, android:clickable="false", android:focusable="false",
         // android:focusableInTouchMode="false" are defined within all candiate widget
         //that consumes click event. Without adding this, click event does not work
@@ -56,6 +58,21 @@ public class MainActivity extends AppCompatActivity {
                 // Get the selected item and activate newtask activity
                 Log.d(TAG, cursor.getString(cursor.getColumnIndexOrThrow(TaskDatabaseHelper.KEY_TASKS_TODO)));
 
+                // To resolve scope, MainActivity.this is used, instead of this
+                Intent intent = new Intent(MainActivity.this, NewTaskActivity.class);
+
+                //Read value from DB using cursor
+                taskItem.setId(cursor.getInt(cursor.getColumnIndexOrThrow(TaskDatabaseHelper.KEY_TASKS_ID)));
+                taskItem.setTodo(cursor.getString(cursor.getColumnIndexOrThrow(TaskDatabaseHelper.KEY_TASKS_TODO)));
+                taskItem.setPriority(cursor.getInt(cursor.getColumnIndexOrThrow(TaskDatabaseHelper.KEY_TASKS_PRIORITY)));
+                taskItem.setDueDateTime(cursor.getString(cursor.getColumnIndexOrThrow(TaskDatabaseHelper.KEY_TASKS_DUEDATE)));
+
+                //Assign data to send - which implements Parcel interface to send
+                intent.putExtra(NewTaskActivity.EXTRA_DB_COMMAND, "UPDATE");
+                intent.putExtra(NewTaskActivity.EXTRA_SELECTED_ITEM, taskItem);
+
+                //To resolve scope, MainActivity.this is used, instead of this
+                startActivity(intent);
             }
         });
     }
@@ -86,11 +103,13 @@ public class MainActivity extends AppCompatActivity {
 
 
     public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent = new Intent(MainActivity.this, NewTaskActivity.class);
         // Handle Add button on the action bar items
         switch (item.getItemId()) {
             case R.id.addtask:
+                intent.putExtra(NewTaskActivity.EXTRA_DB_COMMAND, "CREATE");
                 // when AddTask button is selected, go to another activity
-                startActivityForResult(new Intent(this, NewTaskActivity.class), 0);
+                startActivity(new Intent(this, NewTaskActivity.class));
                 return true;
 
             default:

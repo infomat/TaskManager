@@ -1,13 +1,16 @@
 package com.conestogac.mytask;
 
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.Date;
 import java.util.Timer;
 
 /**
  * Created by infomat on 16-06-09.
  */
-public class Task {
+public class Task implements Parcelable {
     private Integer _id;
     private String todo;
     private Integer priority;
@@ -56,4 +59,42 @@ public class Task {
         return this.isCompleted;
     }
 
+    /**
+     *
+     * Implement Parcelable Interface, to send task object between object
+     */
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public Task(Parcel in){
+        String[] data= new String[4];
+
+        in.readStringArray(data);
+        this._id = Integer.parseInt(data[0]);
+        this.todo = data[1];
+        this.priority = Integer.parseInt(data[2]);
+        this.dueDateTime = data[3];
+        //isCompleted is not plan to send
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeStringArray(new String[]{String.valueOf(this._id),this.todo,
+                                String.valueOf(this.priority),this.dueDateTime});
+    }
+
+    public static final Parcelable.Creator<Task> CREATOR= new Parcelable.Creator<Task>() {
+
+        @Override
+        public Task createFromParcel(Parcel source) {
+            return new Task(source);  //using parcelable constructor
+        }
+
+        @Override
+        public Task[] newArray(int size) {
+            return new Task[size];
+        }
+    };
 }
