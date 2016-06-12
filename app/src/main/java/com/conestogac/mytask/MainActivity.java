@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
                 taskItem.setDueDateTime(cursor.getString(cursor.getColumnIndexOrThrow(TaskDatabaseHelper.KEY_TASKS_DUEDATE)));
 
                 //Assign data to send - which implements Parcel interface to send
-                intent.putExtra(NewTaskActivity.EXTRA_DB_COMMAND, "UPDATE");
+                intent.putExtra(NewTaskActivity.EXTRA_DB_COMMAND, NewTaskActivity.DbOperation[1]);
                 intent.putExtra(NewTaskActivity.EXTRA_SELECTED_ITEM, taskItem);
 
                 //To resolve scope, MainActivity.this is used, instead of this
@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
         // Handle Add button on the action bar items
         switch (item.getItemId()) {
             case R.id.addtask:
-                intent.putExtra(NewTaskActivity.EXTRA_DB_COMMAND, "CREATE");
+                intent.putExtra(NewTaskActivity.EXTRA_DB_COMMAND, NewTaskActivity.DbOperation[0]);
                 // when AddTask button is selected, go to another activity
                 startActivity(new Intent(this, NewTaskActivity.class));
                 return true;

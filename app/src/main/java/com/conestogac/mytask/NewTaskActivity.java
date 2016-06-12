@@ -1,15 +1,22 @@
 package com.conestogac.mytask;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -21,19 +28,24 @@ import java.util.Date;
 public class NewTaskActivity extends Activity implements AdapterView.OnItemSelectedListener {
     public static final String EXTRA_DB_COMMAND = "dboperation";
     public static final String EXTRA_SELECTED_ITEM = "selectedItem";
-    public static String DbOperation = "CREATE";
+    public static final String[] DbOperation = {"CREATE", "UPDATE"};
 
     private static final String TAG = NewTaskActivity.class.getSimpleName();
     private static final String[] listPriority={"None", "Low", "Mid", "Important"};
     private static String[] listDate={"Today", "Tomorrow", "Next", "Pick a date..."};
     private static final String[] listTime={"Morning 08:00AM", "Afternoon 1:00PM", "Evening 6:00PM", "Night 8:00PM", "Pick a time..."};
     private SimpleDateFormat sdf_dayOfWeek = new SimpleDateFormat("EEEE");
-    private SimpleDateFormat sdf_user = new SimpleDateFormat("EEE MMM dd, hh:mm a");
+    private SimpleDateFormat sdf_user = new SimpleDateFormat("EEE MMM dd, yyyy hh:mm a");
+    private SimpleDateFormat sdf_date = new SimpleDateFormat("EEEE, MMMM dd, yyyy");
+    private SimpleDateFormat sdf_time = new SimpleDateFormat("hh:mm a");
 
     private Date today = new Date();
     Task taskItem;
 
     private EditText edTodo;
+    private TextView tvPriority;
+    private TextView tvDate;
+    private TextView tvTime;
     private Spinner spPriority;
     private Spinner spDate;
     private Spinner spTime;
@@ -53,22 +65,23 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
         mytaskdb = new TaskDatabaseHelper(this);
 
         //set up widget
-        edTodo = (EditText) findViewById(R.id.edTodo);
+        setUpWidget();
         setupSpinner();
-        btAdd = (Button) findViewById(R.id.btAdd);
-        btComplete = (Button) findViewById(R.id.btComplete);
 
         //get current date, time
         mCal = Calendar.getInstance();
 
         //check Extra and set data if it is update
-        DbOperation = getIntent().getStringExtra(EXTRA_DB_COMMAND);
-        if (DbOperation.equals("UPDATE")) {
+        if (DbOperation[1].equals(getIntent().getStringExtra(EXTRA_DB_COMMAND))) {
             this.setTitle("Update Task");
             btAdd.setText("UPDATE");
             taskItem = (Task) getIntent().getExtras().get(EXTRA_SELECTED_ITEM);
+
+            //set todo
             edTodo.setText(taskItem.getTodo());
-            spPriority.setSelection(taskItem.getPriority());
+
+            //set priority
+            tvPriority.setText(listPriority[taskItem.getPriority()]);
 
             //set calendar
             try {
@@ -76,15 +89,26 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
             } catch (Exception e) {
                 mCal.setTime(today);
             }
-            //set spinner for date from
+            //set textview for date from
+            tvDate.setText(sdf_date.format(mCal.getTime()));
 
-            //set spinner for time from
+            //set textview for time from
+            tvTime.setText(sdf_time.format(mCal.getTime()));
 
-
+        //to make simple, else is considerd as New Task
         } else {
             this.setTitle("New Task");
             btAdd.setText("ADD");
         }
+    }
+
+    private void setUpWidget() {
+        edTodo = (EditText) findViewById(R.id.edTodo);
+        tvPriority = (TextView) findViewById(R.id.tvPriority);
+        tvDate = (TextView) findViewById(R.id.tvDate);
+        tvTime = (TextView) findViewById(R.id.tvTime);
+        btAdd = (Button) findViewById(R.id.btAdd);
+        btComplete = (Button) findViewById(R.id.btComplete);
     }
 
     @Override
@@ -118,6 +142,29 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
 
     }
 
+    //To make spinner inflated after user select textview
+    //Actually, make spinner use customized view instead of fixed array items is a right way
+    //To make simple I use this way
+    //When Priority Textview Selected
+    public void onPriority(View view) {
+        Log.d(TAG, "onPriority");
+        spPriority.performClick();
+    }
+
+    //When Date Textview Selected
+    public void onDate(View view) {
+        Log.d(TAG, "onDate");
+        spDate.performClick();
+        Log.d(TAG, "onDate- After Perform click");
+    }
+
+    //When Time Textview Selected
+    public void onTime(View view) {
+        Log.d(TAG, "onTime");
+        spTime.performClick();
+        Log.d(TAG, "onDate- After Perform click");
+    }
+
     //Add Button
     public void onAddTask(View view) {
         String strDate;
@@ -149,13 +196,9 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
     private void setupSpinner() {
         //Get Spinner and set listener to get event
         spPriority=(Spinner)findViewById(R.id.spPriority);
-        spPriority.setOnItemSelectedListener(this);
-
         spDate=(Spinner)findViewById(R.id.spDate);
-        spDate.setOnItemSelectedListener(this);
-
         spTime=(Spinner)findViewById(R.id.spTime);
-        spTime.setOnItemSelectedListener(this);
+
 
         //To set next week
         Log.d(TAG, "Next " + sdf_dayOfWeek.format(today));
@@ -173,15 +216,23 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
 
         aaPriority.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item);
+        //These Set should be in the order to avoid first event without user interaction.
+        //i.e always position 0 selection event will come without following these order.
         spPriority.setAdapter(aaPriority);
+        spPriority.setSelection(0,true);
+        spPriority.setOnItemSelectedListener(this);
 
         aaListDate.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item);
         spDate.setAdapter(aaListDate);
+        spDate.setSelection(0,true);
+        spDate.setOnItemSelectedListener(this);
 
         aaListTime.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item);
         spTime.setAdapter(aaListTime);
+        spTime.setSelection(0,true);
+        spTime.setOnItemSelectedListener(this);
     }
 
 
@@ -195,9 +246,12 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
             default:
                 mPriority = 0;
         }
+        tvPriority.setText(listPriority[mPriority]);
     }
 
     private void afterDateSelect(Integer position) {
+        Log.d(TAG, "afterDateSelect()");
+
         switch(position) {
             case 0:
                 //Today
@@ -215,11 +269,34 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
                 break;
             case 3:
                 //Pick a date
-
+                new DatePickerDialog(this, d,
+                        mCal.get(Calendar.YEAR),
+                        mCal.get(Calendar.MONTH),
+                        mCal.get(Calendar.DAY_OF_MONTH))
+                        .show();
                 break;
             default:
         }
+        //set textview for date from
+        tvDate.setText(sdf_date.format(mCal.getTime()));
+        Log.d(TAG, "afterDateSelect() -- SetText");
     }
+
+    //Date Picker Listener
+    //Update mCal member variable and update textview
+    DatePickerDialog.OnDateSetListener d=new DatePickerDialog.OnDateSetListener() {
+        public void onDateSet(DatePicker view, int year, int monthOfYear,
+                              int dayOfMonth) {
+            //Update mCal
+            mCal.set(Calendar.YEAR, year);
+            mCal.set(Calendar.MONTH, monthOfYear);
+            mCal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+            //Updating textview
+            tvDate.setText(sdf_date.format(mCal.getTime()));
+            Log.d(TAG, "DatePickerDialog() -- SetText");
+        }
+    };
 
     private void afterTimeSelect(Integer position) {
         switch(position) {
@@ -245,8 +322,28 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
                 break;
             case 4:
                 //Pick a time
+                new TimePickerDialog(this, t,
+                    mCal.get(Calendar.HOUR_OF_DAY), mCal.get(Calendar.MINUTE), false)
+                        .show();
                 break;
             default:
         }
+
+        //set textview for time from
+        tvTime.setText(sdf_time.format(mCal.getTime()));
     }
+
+    TimePickerDialog.OnTimeSetListener t=new TimePickerDialog.OnTimeSetListener() {
+        public void onTimeSet(TimePicker view, int hourOfDay,
+                              int minute) {
+
+            mCal.set(Calendar.HOUR_OF_DAY, hourOfDay);
+            mCal.set(Calendar.MINUTE, minute);
+
+            //Updating textview
+            tvTime.setText(sdf_time.format(mCal.getTime()));
+
+            Log.d(TAG, "TimePickerDialog() -- SetText");
+        }
+    };
 }
