@@ -14,7 +14,8 @@
         android:linksClickable="false"
         android:height="50dp"
         android:paddingLeft="@dimen/widget_padding"
-        android:paddingRight="@dimen/widget_padding" />
+        android:paddingRight="@dimen/widget_padding"
+        android:hint="Enter Todo" />
 
     <TextView
         android:layout_width="match_parent"

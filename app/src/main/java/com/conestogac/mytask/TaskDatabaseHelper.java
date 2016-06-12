@@ -88,7 +88,7 @@ public class TaskDatabaseHelper extends SQLiteOpenHelper {
     }
 
     //Update record with given ID
-    public Integer updateGrade(Task task) {
+    public Integer updateTask(Task task) {
         Integer numberOfUpdated;
 
         Log.d(TAG,"_ID= "+task.getId()+"Todo "+task.getTodo()+"Priority "+task.getPriority()
@@ -110,16 +110,11 @@ public class TaskDatabaseHelper extends SQLiteOpenHelper {
 
         //to avoid update empty datetime
         //isEmpty should be used for string comparision
-        //if (task.getDueDateTime().isEmpty() == false)
+        if (task.getDueDateTime().isEmpty() == false)
         {
             cv.put(KEY_TASKS_DUEDATE, task.getDueDateTime());
         }
 
-        //iscompleted will be updated if iscompleted is entered. If it is -1 means,
-        // it is empty which is set at Main activity
-        if (task.getIsIsCompleted() != -1) {
-            cv.put(KEY_TASKS_ISCOMPLETED, task.getIsIsCompleted());
-        }
 
         //update data by search with ID
         //UPDATE tasks SET task=a, duedate=b, iscompleted=c WHERE ID=id
@@ -132,7 +127,7 @@ public class TaskDatabaseHelper extends SQLiteOpenHelper {
     }
 
     //Delete Grade in the table with ID
-    public Integer deleteGrade(Integer id) {
+    public Integer deleteTask(Integer id) {
 
         Integer ret_value;
         SQLiteDatabase db = this.getWritableDatabase();

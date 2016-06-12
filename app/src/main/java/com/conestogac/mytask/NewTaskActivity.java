@@ -16,8 +16,6 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -40,7 +38,7 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
     private SimpleDateFormat sdf_time = new SimpleDateFormat("hh:mm a");
 
     private Date today = new Date();
-    Task taskItem;
+    Task taskItem = new Task();;
 
     private EditText edTodo;
     private TextView tvPriority;
@@ -50,9 +48,8 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
     private Spinner spDate;
     private Spinner spTime;
     private Button  btAdd;
-    private Button  btComplete;
 
-    private Integer mPriority;
+    private Integer mPriority = 0;
     private Calendar mCal;
     private TaskDatabaseHelper mytaskdb;
 
@@ -68,7 +65,7 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
         setUpWidget();
         setupSpinner();
 
-        //get current date, time
+        //get Calendar instance
         mCal = Calendar.getInstance();
 
         //check Extra and set data if it is update
@@ -80,8 +77,6 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
             //set todo
             edTodo.setText(taskItem.getTodo());
 
-            //set priority
-            tvPriority.setText(listPriority[taskItem.getPriority()]);
 
             //set calendar
             try {
@@ -89,17 +84,21 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
             } catch (Exception e) {
                 mCal.setTime(today);
             }
-            //set textview for date from
-            tvDate.setText(sdf_date.format(mCal.getTime()));
 
-            //set textview for time from
-            tvTime.setText(sdf_time.format(mCal.getTime()));
 
         //to make simple, else is considerd as New Task
         } else {
             this.setTitle("New Task");
             btAdd.setText("ADD");
+            //Set Default Value
+            taskItem.setPriority(0);
+            mCal.setTime(today);
         }
+
+        //set priority and Date Time
+        tvPriority.setText(listPriority[taskItem.getPriority()]);
+        tvDate.setText(sdf_date.format(mCal.getTime()));
+        tvTime.setText(sdf_time.format(mCal.getTime()));
     }
 
     private void setUpWidget() {
@@ -108,29 +107,27 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
         tvDate = (TextView) findViewById(R.id.tvDate);
         tvTime = (TextView) findViewById(R.id.tvTime);
         btAdd = (Button) findViewById(R.id.btAdd);
-        btComplete = (Button) findViewById(R.id.btComplete);
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent,
             View v, int position, long id) {
-
         parent.getItemAtPosition(position);
 
         switch(parent.getId()) {
 
             case R.id.spPriority:
-                Log.d(TAG,"Priority: "+position);
+                Log.d(TAG,"onItemSelected - Priority: "+position);
                 afterPrioritySelect(position);
                 break;
 
             case R.id.spDate:
-                Log.d(TAG,"Date "+position);
+                Log.d(TAG,"onItemSelected - Date: "+position);
                 afterDateSelect(position);
                 break;
 
             case R.id.spTime:
-                Log.d(TAG,"Time "+position);
+                Log.d(TAG,"onItemSelected - Time: "+position);
                 afterTimeSelect(position);
                 break;
         }
@@ -149,10 +146,12 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
     public void onPriority(View view) {
         Log.d(TAG, "onPriority");
         spPriority.performClick();
+        Log.d(TAG, "onPriority- After Perform click");
     }
 
     //When Date Textview Selected
     public void onDate(View view) {
+        boolean retValue;
         Log.d(TAG, "onDate");
         spDate.performClick();
         Log.d(TAG, "onDate- After Perform click");
@@ -168,21 +167,28 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
     //Add Button
     public void onAddTask(View view) {
         String strDate;
-        taskItem = new Task();
 
-        Log.d(TAG, "Add Button");
-        taskItem.setTodo(edTodo.getText().toString());
-        taskItem.setPriority(mPriority);
+            Log.d(TAG, "Add Button");
+            taskItem.setTodo(edTodo.getText().toString());
+            taskItem.setPriority(mPriority);
 
-        strDate = sdf_user.format(mCal.getTime());
-        Log.d(TAG, "ADD Date: "+strDate);
-        taskItem.setDueDateTime(strDate);
+            strDate = sdf_user.format(mCal.getTime());
+            Log.d(TAG, "ADD Date: " + strDate);
+            taskItem.setDueDateTime(strDate);
 
-        //pass markitem object to data helper
-        if (mytaskdb.insertTask(taskItem)) {
-            Toast.makeText(getApplicationContext(), "Task is added", Toast.LENGTH_SHORT).show();
+        if(btAdd.getText().equals("ADD")) {
+            //pass markitem object to data helper
+            if (mytaskdb.insertTask(taskItem)) {
+                Toast.makeText(getApplicationContext(), "Task is added", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "Error!!! Please try again.", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            Toast.makeText(getApplicationContext(), "Error!!! Please try again.", Toast.LENGTH_SHORT).show();
+            if (mytaskdb.updateTask(taskItem) > 0) {
+                Toast.makeText(getApplicationContext(), "Task is updated", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "Error!!! Please try again.", Toast.LENGTH_SHORT).show();
+            }
         }
         this.finish();
     }
@@ -190,6 +196,12 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
     //Complete Button
     public void onCompleteTask(View view) {
         Log.d(TAG, "Complete Button");
+        if (mytaskdb.deleteTask(taskItem.getId()) > 0) {
+            Toast.makeText(getApplicationContext(), "Task is deleted", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getApplicationContext(), "No matched item to delete!!!", Toast.LENGTH_SHORT).show();
+        }
+        this.finish();
     }
 
     // To setup spinner to get Priority, Data, Time
@@ -219,25 +231,25 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
         //These Set should be in the order to avoid first event without user interaction.
         //i.e always position 0 selection event will come without following these order.
         spPriority.setAdapter(aaPriority);
-        spPriority.setSelection(0,true);
+        spPriority.setSelection(0,false);
         spPriority.setOnItemSelectedListener(this);
 
         aaListDate.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item);
         spDate.setAdapter(aaListDate);
-        spDate.setSelection(0,true);
+        spDate.setSelection(0,false);
         spDate.setOnItemSelectedListener(this);
 
         aaListTime.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item);
         spTime.setAdapter(aaListTime);
-        spTime.setSelection(0,true);
+        spTime.setSelection(0,false);
         spTime.setOnItemSelectedListener(this);
     }
 
 
     private void afterPrioritySelect(Integer position) {
-
+        Log.d(TAG, "afterPrioritySelect()");
         switch(position) {
             case 0: case 1: case 2: case 3:
                 mPriority = position;
@@ -247,6 +259,7 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
                 mPriority = 0;
         }
         tvPriority.setText(listPriority[mPriority]);
+        Log.d(TAG, "afterPrioritySelect() -- SetText");
     }
 
     private void afterDateSelect(Integer position) {
@@ -269,8 +282,7 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
                 break;
             case 3:
                 //Pick a date
-                new DatePickerDialog(this, d,
-                        mCal.get(Calendar.YEAR),
+                new DatePickerDialog(this, d, mCal.get(Calendar.YEAR),
                         mCal.get(Calendar.MONTH),
                         mCal.get(Calendar.DAY_OF_MONTH))
                         .show();
@@ -323,7 +335,8 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
             case 4:
                 //Pick a time
                 new TimePickerDialog(this, t,
-                    mCal.get(Calendar.HOUR_OF_DAY), mCal.get(Calendar.MINUTE), false)
+                        mCal.get(Calendar.HOUR_OF_DAY),
+                        mCal.get(Calendar.MINUTE), false)
                         .show();
                 break;
             default:
