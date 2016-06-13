@@ -21,7 +21,8 @@ public class TaskDatabaseHelper extends SQLiteOpenHelper {
     public static final String KEY_TASKS_PRIORITY = "priority";
     public static final String KEY_TASKS_DUEDATE = "duedate";
     public static final String KEY_TASKS_ISCOMPLETED = "iscompleted";  //Todo this is not needed
-
+    public static final String[] sortConditon = { KEY_TASKS_ID,KEY_TASKS_TODO,KEY_TASKS_PRIORITY,KEY_TASKS_DUEDATE };
+    public static final String[] orderConditon = {" ASC ", " DESC "};
 
     private static final String TAG = TaskDatabaseHelper.class.getSimpleName();
 
@@ -158,11 +159,13 @@ public class TaskDatabaseHelper extends SQLiteOpenHelper {
 
 
     //Get all list
-    public Cursor getAllTasks() {
+    public Cursor getAllTasks(Integer sortSel, Integer orderSel) {
+
         //Get Database object as Readable
         SQLiteDatabase db = this.getReadableDatabase();
         //Get cursor
-        Cursor res = db.rawQuery("select * from "+ TASK_TABLE_NAME, null);
+        Cursor res = db.rawQuery("SELECT * FROM "+ TASK_TABLE_NAME +
+                                    " ORDER BY " + sortConditon[sortSel] + orderConditon[orderSel], null);
         //Move cursor to point first
         res.moveToFirst();
 

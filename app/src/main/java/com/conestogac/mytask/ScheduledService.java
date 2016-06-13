@@ -1,17 +1,13 @@
 package com.conestogac.mytask;
 
-import android.app.AlertDialog;
 import android.app.IntentService;
 import android.content.ComponentName;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.commonsware.cwac.wakeful.WakefulIntentService;
-
-
-
+/*
+ * This Service
+ */
 public class ScheduledService extends IntentService {
 
     public ScheduledService() {

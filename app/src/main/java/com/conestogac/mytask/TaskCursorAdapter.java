@@ -6,14 +6,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import org.w3c.dom.Text;
 
 /**
  * Cursor Adapter to show cursor value on list item by reading from Database
@@ -41,7 +38,7 @@ public class TaskCursorAdapter extends CursorAdapter{
     // The bindView method is used to bind all data to a given view
     // such as setting the data on a TextView.
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
+    public void bindView(View view, Context context, final Cursor cursor) {
         // Find fields to populate in inflated template
         CheckBox cbIsCompleted = (CheckBox) view.findViewById(R.id.cbIsCompleted);
         Button btPriority = (Button) view.findViewById(R.id.btPrority);
@@ -53,6 +50,9 @@ public class TaskCursorAdapter extends CursorAdapter{
         curConext = context;
         btPriority.setBackgroundColor(getColorFromPriority(cursor.getInt(cursor.getColumnIndexOrThrow(TaskDatabaseHelper.KEY_TASKS_PRIORITY))));
         tvTodo.setText(String.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(TaskDatabaseHelper.KEY_TASKS_TODO))));
+
+        //Set tag with id of item and  get id when checkbox clicked to delete the checked task
+        tvTodo.setTag(cursor.getInt(0));
         tvDateTime.setText(String.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(TaskDatabaseHelper.KEY_TASKS_DUEDATE))));
     }
 

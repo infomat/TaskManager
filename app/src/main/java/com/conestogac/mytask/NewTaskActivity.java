@@ -22,7 +22,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 /**
- * This activity is for getting task from user
+ * This activity is for getting task or updating from user
  */
 public class NewTaskActivity extends Activity implements AdapterView.OnItemSelectedListener {
     public static final String EXTRA_DB_COMMAND = "dboperation";
@@ -210,7 +210,7 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
     public void onCompleteTask(View view) {
         Log.d(TAG, "Complete Button");
 
-        cancelAlarm();  //Cancel Alarm first incase of probelm at DB
+        cancelAlarm();  //Cancel Alarm first incase of problem at DB
 
         if (mytaskdb.deleteTask(taskItem.getId()) > 0) {
             Toast.makeText(getApplicationContext(), "Task is deleted", Toast.LENGTH_SHORT).show();
@@ -228,7 +228,7 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
         spTime=(Spinner)findViewById(R.id.spTime);
 
 
-        //To set next week
+        //To set next week's day at spinner. this idea was borroed from google note's reminder
         Log.d(TAG, "Next " + sdf_dayOfWeek.format(today));
         listDate[2] = "Next " + sdf_dayOfWeek.format(today);
 
@@ -244,6 +244,7 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
 
         aaPriority.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item);
+
         //These Set should be in the order to avoid first event without user interaction.
         //i.e always position 0 selection event will come without following these order.
         spPriority.setAdapter(aaPriority);
@@ -263,7 +264,7 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
         spTime.setOnItemSelectedListener(this);
     }
 
-
+    //this is invoked after user select spinner item of priority
     private void afterPrioritySelect(Integer position) {
         Log.d(TAG, "afterPrioritySelect()");
         switch(position) {
@@ -278,6 +279,7 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
         Log.d(TAG, "afterPrioritySelect() -- SetText");
     }
 
+    //this is invoked after user select spinner item of date
     private void afterDateSelect(Integer position) {
         Log.d(TAG, "afterDateSelect()");
 
@@ -310,7 +312,7 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
         Log.d(TAG, "afterDateSelect() -- SetText");
     }
 
-    //Date Picker Listener
+    //Date Picker Listener which is invoked after user select date at picker
     //Update mCal member variable and update textview
     DatePickerDialog.OnDateSetListener d=new DatePickerDialog.OnDateSetListener() {
         public void onDateSet(DatePicker view, int year, int monthOfYear,
@@ -321,11 +323,13 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
             mCal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
             //Updating textview
+            //This is need here, because it will be run with separate thread
             tvDate.setText(sdf_date.format(mCal.getTime()));
             Log.d(TAG, "DatePickerDialog() -- SetText");
         }
     };
 
+    //this is invoked after user select spinner item of time
     private void afterTimeSelect(Integer position) {
         switch(position) {
             case 0:
@@ -350,9 +354,10 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
                 break;
             case 4:
                 //Pick a time
+                //Timer is set as 5 minutes later of current time with default for user's convenience
                 new TimePickerDialog(this, t,
                         mCal.get(Calendar.HOUR_OF_DAY),
-                        mCal.get(Calendar.MINUTE), false)
+                        mCal.get(Calendar.MINUTE)+5, false)
                         .show();
                 break;
             default:
@@ -362,6 +367,8 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
         tvTime.setText(sdf_time.format(mCal.getTime()));
     }
 
+
+    //Time Picker listener which is invoke when user select time picker
     TimePickerDialog.OnTimeSetListener t=new TimePickerDialog.OnTimeSetListener() {
         public void onTimeSet(TimePicker view, int hourOfDay,
                               int minute) {
@@ -370,13 +377,23 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
             mCal.set(Calendar.MINUTE, minute);
 
             //Updating textview
+            //This is need here, because it will be run with separate thread
             tvTime.setText(sdf_time.format(mCal.getTime()));
 
             Log.d(TAG, "TimePickerDialog() -- SetText");
         }
     };
 
-
+    /*
+     * Flow:
+     * 1. Call scheduleExactAlarm at AlarmReceiver with time and id
+     * 2. Create pending indent with unique id(task _id) and set alarm with pending indent
+     * 3. When Alarm event occur, it will invoke onReceive() with indent information
+     * 4. Using indent information which has alarm id, invoke startWakefulService with indent task id
+     * 5. ßstartWakefulService will call AlarmPopupActivity which theme uses a Dialo theme
+     * ** Note that the role of startWakefulService is to invoke activity even though application
+     *    is not running state
+     */
     private void startAlarm() {
         AlarmReceiver.scheduleExactAlarm(this, alarms, mCal.getTimeInMillis(), taskItem.getId());
     }
