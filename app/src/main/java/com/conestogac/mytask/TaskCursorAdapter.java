@@ -59,7 +59,7 @@ public class TaskCursorAdapter extends CursorAdapter{
     public Integer getColorFromPriority(Integer priority) {
         Integer retColor;
 
-        Log.d(TAG,"getColorFromPriority() Priority Color:" + priority);
+        Log.i(TAG,"getColorFromPriority() Priority Color:" + priority);
 
         switch (priority) {
             case 1:

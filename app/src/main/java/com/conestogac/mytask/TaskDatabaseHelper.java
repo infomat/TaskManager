@@ -58,26 +58,41 @@ public class TaskDatabaseHelper extends SQLiteOpenHelper {
 
 
     //Insert task
-    public boolean insertTask(Task task) {
+    public Integer insertTask(Task task) {
+        Long retValue;
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(KEY_TASKS_TODO, task.getTodo());
         cv.put(KEY_TASKS_PRIORITY, task.getPriority());
         cv.put(KEY_TASKS_DUEDATE, task.getDueDateTime());
         cv.put(KEY_TASKS_ISCOMPLETED, task.getIsIsCompleted());
-        db.insert(TASK_TABLE_NAME, null, cv);
+        retValue = db.insert(TASK_TABLE_NAME, null, cv);
 
         db.close();
-        return true;
+        return retValue.intValue();
     }
 
     //Get data using ID
-    public Cursor getData(int id) {
+    public Task getData(Integer id) {
+        Task task;
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res = db.rawQuery("select * from grades where _id=" + id + "", null);
-        //Close cursor(), to send sure
+
+        Log.d(TAG, "getData() _ID: "+id);
+
+        Cursor res = db.rawQuery("SELECT * FROM "+
+                                    TASK_TABLE_NAME +
+                                    " WHERE _id=" + id, null);
+        res.moveToFirst();
+
+
+        //Init Task object
+        task = new Task(res.getInt(0), res.getString(1), res.getInt(2), res.getString(3), 0);
+
+        //Close cursor, db
         res.close();
-        return res;
+        db.close();
+
+        return task;
     }
 
     //Get number of rows in the table

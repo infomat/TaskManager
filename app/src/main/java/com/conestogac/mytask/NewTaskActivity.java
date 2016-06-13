@@ -1,6 +1,7 @@
 package com.conestogac.mytask;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
@@ -53,6 +54,8 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
     private Calendar mCal;
     private TaskDatabaseHelper mytaskdb;
 
+    private AlarmManager alarms=null;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +71,9 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
         //get Calendar instance
         mCal = Calendar.getInstance();
 
+        //Define Alarm Manager
+        alarms=(AlarmManager)getSystemService(ALARM_SERVICE);
+
         //check Extra and set data if it is update
         if (DbOperation[1].equals(getIntent().getStringExtra(EXTRA_DB_COMMAND))) {
             this.setTitle("Update Task");
@@ -76,15 +82,12 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
 
             //set todo
             edTodo.setText(taskItem.getTodo());
-
-
             //set calendar
             try {
                 mCal.setTime(sdf_user.parse(taskItem.getDueDateTime()));
             } catch (Exception e) {
                 mCal.setTime(today);
             }
-
 
         //to make simple, else is considerd as New Task
         } else {
@@ -177,25 +180,34 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
             taskItem.setDueDateTime(strDate);
 
         if(btAdd.getText().equals("ADD")) {
+            //After insert,
+            taskItem.setId(mytaskdb.insertTask(taskItem));
+
             //pass markitem object to data helper
-            if (mytaskdb.insertTask(taskItem)) {
+            if (taskItem.getId() > 0) {
                 Toast.makeText(getApplicationContext(), "Task is added", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getApplicationContext(), "Error!!! Please try again.", Toast.LENGTH_SHORT).show();
             }
         } else {
             if (mytaskdb.updateTask(taskItem) > 0) {
+                //Before create updated alarm, cancel previous alarm
+                cancelAlarm();
                 Toast.makeText(getApplicationContext(), "Task is updated", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getApplicationContext(), "Error!!! Please try again.", Toast.LENGTH_SHORT).show();
             }
         }
+        startAlarm(); //Start Alarm
         this.finish();
     }
 
     //Complete Button
     public void onCompleteTask(View view) {
         Log.d(TAG, "Complete Button");
+
+        cancelAlarm();  //Cancel Alarm first incase of probelm at DB
+
         if (mytaskdb.deleteTask(taskItem.getId()) > 0) {
             Toast.makeText(getApplicationContext(), "Task is deleted", Toast.LENGTH_SHORT).show();
         } else {
@@ -359,4 +371,14 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
             Log.d(TAG, "TimePickerDialog() -- SetText");
         }
     };
+
+
+    private void startAlarm() {
+        AlarmReceiver.scheduleExactAlarm(this, alarms, mCal.getTimeInMillis(), taskItem.getId());
+    }
+
+    private void cancelAlarm() {
+        AlarmReceiver.cancelAlarm(this, alarms, taskItem.getId());
+    }
+
 }
