@@ -49,6 +49,7 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
     private Spinner spDate;
     private Spinner spTime;
     private Button  btAdd;
+    private Button  btComplete;
 
     private Integer mPriority = 0;
     private Calendar mCal;
@@ -79,6 +80,7 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
             this.setTitle("Update Task");
             btAdd.setText("UPDATE");
             taskItem = (Task) getIntent().getExtras().get(EXTRA_SELECTED_ITEM);
+            btComplete.setVisibility(View.VISIBLE);
 
             //set todo
             edTodo.setText(taskItem.getTodo());
@@ -93,6 +95,7 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
         } else {
             this.setTitle("New Task");
             btAdd.setText("ADD");
+            btComplete.setVisibility(View.GONE);
             //Set Default Value
             taskItem.setPriority(0);
             mCal.setTime(today);
@@ -110,6 +113,7 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
         tvDate = (TextView) findViewById(R.id.tvDate);
         tvTime = (TextView) findViewById(R.id.tvTime);
         btAdd = (Button) findViewById(R.id.btAdd);
+        btComplete = (Button) findViewById(R.id.btComplete);
     }
 
     @Override
