@@ -299,11 +299,14 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
                 mCal.add(Calendar.DATE, 7);
                 break;
             case 3:
+                //This is need to receive event for the same selection of item at spinner
+                spDate.setSelection(0, false);
                 //Pick a date
                 new DatePickerDialog(this, d, mCal.get(Calendar.YEAR),
                         mCal.get(Calendar.MONTH),
                         mCal.get(Calendar.DAY_OF_MONTH))
                         .show();
+
                 break;
             default:
         }
@@ -331,7 +334,8 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
 
     //this is invoked after user select spinner item of time
     private void afterTimeSelect(Integer position) {
-        switch(position) {
+
+        switch (position) {
             case 0:
                 //08:00AM
                 mCal.set(Calendar.HOUR_OF_DAY, 8);
@@ -353,19 +357,18 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
                 mCal.set(Calendar.MINUTE, 0);
                 break;
             case 4:
+                //This is need to receive event for the same selection of item at spinner
+                spTime.setSelection(0, false);
                 //Pick a time
-                //Timer is set as 5 minutes later of current time with default for user's convenience
-                //Todo Note!!! Due to selecting same spinner item does not make event
-                //to solve this problem, overriding function to make event always
-                //Due to shortage of time, implement using flag
                 new TimePickerDialog(this, t,
                         mCal.get(Calendar.HOUR_OF_DAY),
-                        mCal.get(Calendar.MINUTE)+5, false)
+                        mCal.get(Calendar.MINUTE) + 5, false)
                         .show();
-                
+
                 break;
             default:
         }
+
 
         //set textview for time from
         tvTime.setText(sdf_time.format(mCal.getTime()));
