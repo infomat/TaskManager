@@ -34,6 +34,9 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         Integer _id = i.getIntExtra(EXTRA_ID, 0);
         Log.d(TAG,"At onReceive _ID "+_id);
 
+        //Todo After booting, restore alarm list is needed
+        //Due to shortage of time this will not implemented
+
         //To avoid app is killed due to invalid id check _id is valid.
         //In some cases, when alarm is updated, id can be wrong
         if (_id != 0) {

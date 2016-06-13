@@ -355,10 +355,14 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
             case 4:
                 //Pick a time
                 //Timer is set as 5 minutes later of current time with default for user's convenience
+                //Todo Note!!! Due to selecting same spinner item does not make event
+                //to solve this problem, overriding function to make event always
+                //Due to shortage of time, implement using flag
                 new TimePickerDialog(this, t,
                         mCal.get(Calendar.HOUR_OF_DAY),
                         mCal.get(Calendar.MINUTE)+5, false)
                         .show();
+                
                 break;
             default:
         }
