@@ -121,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
                 // when AddTask button is selected, go to another activity
                 startActivity(new Intent(this, NewTaskActivity.class));
                 return true;
+
             //Order by. For each touch, order by will be changed and reload list from db
             case R.id.sort:
                 sortSel = (sortSel+1) % (TaskDatabaseHelper.sortConditon).length;
@@ -128,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
                         TaskDatabaseHelper.sortConditon[sortSel], Toast.LENGTH_SHORT).show();
                 readFromDB();
                 return true;
+
             //Asc or Dsc. For each touch, ASC/DESC will be changed and reload list from db
             case R.id.order:
                 orderSel = (orderSel + 1) %  (TaskDatabaseHelper.orderConditon).length;

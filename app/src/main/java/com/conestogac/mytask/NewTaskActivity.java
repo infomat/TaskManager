@@ -82,8 +82,12 @@ public class NewTaskActivity extends Activity implements AdapterView.OnItemSelec
             taskItem = (Task) getIntent().getExtras().get(EXTRA_SELECTED_ITEM);
             btComplete.setVisibility(View.VISIBLE);
 
+            //set Priority
+            mPriority = taskItem.getPriority();
+
             //set todo
             edTodo.setText(taskItem.getTodo());
+
             //set calendar
             try {
                 mCal.setTime(sdf_user.parse(taskItem.getDueDateTime()));
